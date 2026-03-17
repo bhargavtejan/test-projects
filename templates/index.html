@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Word to PDF Converter</title>
+  <title>Word &lt;-&gt; PDF Converter</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -134,19 +134,19 @@
 </head>
 <body>
   <div class="card">
-    <h1>Word to PDF</h1>
-    <p class="subtitle">Convert .docx or .doc files to PDF instantly</p>
+    <h1>Word &lt;-&gt; PDF Converter</h1>
+    <p class="subtitle">Upload a Word file to get a PDF, or a PDF to get a Word file</p>
 
     <div class="drop-zone" id="drop-zone">
-      <input type="file" id="file-input" accept=".docx,.doc" />
+      <input type="file" id="file-input" accept=".docx,.doc,.pdf" />
       <div class="drop-icon">📄</div>
       <div class="drop-label"><span>Click to upload</span> or drag &amp; drop</div>
-      <div class="file-types">Supported: .docx, .doc &mdash; Max 50 MB</div>
+      <div class="file-types">Supported: .docx, .doc, .pdf &mdash; Max 50 MB</div>
     </div>
 
     <div id="file-name"></div>
 
-    <button class="btn" id="convert-btn" disabled>Convert to PDF</button>
+    <button class="btn" id="convert-btn" disabled>Convert</button>
 
     <div id="status"></div>
   </div>
@@ -163,12 +163,14 @@
     function setFile(file) {
       if (!file) return;
       const ext = file.name.split(".").pop().toLowerCase();
-      if (!["docx", "doc"].includes(ext)) {
-        showStatus("error", "Only .docx and .doc files are supported.");
+      if (!["docx", "doc", "pdf"].includes(ext)) {
+        showStatus("error", "Only .docx, .doc, and .pdf files are supported.");
         return;
       }
       selectedFile = file;
-      fileNameEl.textContent = `Selected: ${file.name}`;
+      const outputExt = ext === "pdf" ? ".docx" : ".pdf";
+      fileNameEl.textContent = `Selected: ${file.name}  →  will produce ${file.name.replace(/\.[^.]+$/, outputExt)}`;
+      convertBtn.textContent = ext === "pdf" ? "Convert to Word" : "Convert to PDF";
       convertBtn.disabled = false;
       statusEl.style.display = "none";
     }
@@ -214,12 +216,13 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         const stem = selectedFile.name.replace(/\.[^.]+$/, "");
+        const ext = selectedFile.name.split(".").pop().toLowerCase();
         a.href = url;
-        a.download = stem + ".pdf";
+        a.download = stem + (ext === "pdf" ? ".docx" : ".pdf");
         a.click();
         URL.revokeObjectURL(url);
 
-        showStatus("success", "Conversion successful! Your PDF has been downloaded.");
+        showStatus("success", "Conversion successful! Your file has been downloaded.");
       } catch (err) {
         showStatus("error", "Network error. Please try again.");
       } finally {
